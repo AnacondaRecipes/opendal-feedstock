@@ -1,0 +1,64 @@
+{% set name = "opendal" %}
+{% set version = "0.47.9" %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: 00c00dc689b521eb8ff48740ae2113bc8912609f392c1c9326accb4414b73fac
+
+build:
+  number: 0
+  skip: true  # [py<310]
+  script_env:
+    # build the full services-all feature set like upstream PyPI wheels
+    - MATURIN_PEP517_ARGS=--locked --features pyo3/extension-module,services-all
+  script:
+    - sh -c "cd bindings/python && cargo-bundle-licenses --features pyo3/extension-module,services-all --format yaml --output ../../THIRDPARTY.yml"  # [unix]
+    - cmd /d /c "cd /d bindings\python && cargo-bundle-licenses --features pyo3/extension-module,services-all --format yaml --output ..\..\THIRDPARTY.yml"  # [win]
+    - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ stdlib('c') }}
+    - {{ compiler('rust') }}
+    - cargo-bundle-licenses
+  host:
+    - python
+    - pip
+    - maturin >=1,<2
+  run:
+    - python
+
+test:
+  imports:
+    - opendal
+  requires:
+    - pip
+  commands:
+    - pip check
+    - python -c "import opendal; operator = opendal.Operator('memory'); operator.write('smoke', b'ok'); assert operator.read('smoke') == b'ok'"
+
+about:
+  home: https://opendal.apache.org/
+  license: Apache-2.0
+  license_family: APACHE
+  license_file:
+    - LICENSE
+    - NOTICE
+    - LICENSE-MPL-2.0.txt
+    # Collected from cargo during the build
+    - THIRDPARTY.yml
+  summary: Apache OpenDAL Python binding
+  description: |
+    Apache OpenDAL is a data access layer that allows users to easily and
+    efficiently retrieve data from various storage services in a unified way.
+  doc_url: https://opendal.apache.org/docs/python/index.html
+  dev_url: https://github.com/apache/opendal
+
+extra:
+  recipe-maintainers:
+    - Xuanwo
