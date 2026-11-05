@@ -1,5 +1,5 @@
 {% set name = "opendal" %}
-{% set version = "0.47.9" %}
+{% set version = "0.47.12" %}
 
 package:
   name: {{ name }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 00c00dc689b521eb8ff48740ae2113bc8912609f392c1c9326accb4414b73fac
+  sha256: 543fa5857858012bbb57c0ba8734209d4a3e531599ca976ee23dc60920dfcd95
 
 build:
   number: 0
@@ -41,6 +41,7 @@ test:
   commands:
     - pip check
     - python -c "import opendal; operator = opendal.Operator('memory'); operator.write('smoke', b'ok'); assert operator.read('smoke') == b'ok'"
+    - python -c "from opendal.services import Scheme; assert Scheme.Dropbox.value == 'dropbox'"
 
 about:
   home: https://opendal.apache.org/
@@ -50,6 +51,7 @@ about:
     - LICENSE
     - NOTICE
     - LICENSE-MPL-2.0.txt
+    - LICENSE-libgcc.txt
     # Collected from cargo during the build
     - THIRDPARTY.yml
   summary: Apache OpenDAL Python binding
